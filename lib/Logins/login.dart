@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../home.dart';
 import 'auth.dart';
 import 'register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   final _auth = AuthService();
@@ -18,6 +19,24 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Okay'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -57,17 +76,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
-                      height: 6,
+                      height: 1.5,
                     ),
                   ),
-                  SizedBox(height: 0.25),
+                  SizedBox(height: 20),
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: 'email',
+                      labelText: 'Email',
                       border: OutlineInputBorder(),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.5),
+                      fillColor: Colors.teal.withOpacity(0.5),
                     ),
                   ),
                   SizedBox(height: 10),
@@ -77,17 +96,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: 'Password',
                       border: OutlineInputBorder(),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.5),
+                      fillColor: Colors.teal.withOpacity(0.5),
                     ),
                     obscureText: true,
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        _showErrorDialog("Please fill in both email and password fields.");
+                        return;
+                      }
+
                       try {
-                        final user = await widget._auth.loginWithUserWithEmailAndPassword(
-                          _emailController.text,
-                          _passwordController.text,
+                        final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: email,
+                          password: password,
                         );
                         if (user != null) {
                           // Login successful, navigate to home page
@@ -95,17 +122,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             context,
                             MaterialPageRoute(builder: (context) => HomePage()),
                           );
-                        } else {
-                          // Handle unsuccessful login
-                          print("Invalid credentials");
-                          // Show an error message to the user
-                          // You can use a SnackBar or showDialog to display the error
                         }
                       } catch (e) {
-                        // Handle other errors
-                        print("Error logging in: $e");
-                        // Show an error message to the user
-                        // You can use a SnackBar or showDialog to display the error
+                        if (e is FirebaseAuthException) {
+                          if (e.code == 'user-not-found') {
+                            _showErrorDialog("No user found for that email.");
+                          } else if (e.code == 'wrong-password') {
+                            _showErrorDialog("Incorrect password provided.");
+                          } else {
+                            _showErrorDialog("Error: ${e.message}");
+                          }
+                        } else {
+                          _showErrorDialog("Error logging in: $e");
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(

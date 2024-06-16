@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:negombo/components/compass.dart';
+import 'package:negombo/components/weatherpg.dart';
 import 'package:negombo/horseride.dart';
 import 'package:negombo/lighthouse.dart';
 import 'package:negombo/restaurant.dart';
@@ -216,9 +217,9 @@ class HomePage extends StatelessWidget {
             ),
             FloatingActionButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => WeatherPage()));
               },
-              child: Icon(Icons.location_city),
+              child: Icon(Icons.cloud),
             ),
             FloatingActionButton(
               onPressed: () {

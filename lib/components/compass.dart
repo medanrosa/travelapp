@@ -52,7 +52,7 @@ class HomePageState extends State<Compassage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         centerTitle: true,
-        title: const Text('Compass Page'),
+        title: const Text('Compass'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
